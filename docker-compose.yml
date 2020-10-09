@@ -1,6 +1,18 @@
 version: '2'
 volumes:
   unms_config:
+  unifi_config:
+    driver: local
+  log:
+    driver: local
+  log2:
+    driver: local
+  run:
+    driver: local
+  run2:
+    driver: local
+  work:
+    driver: local
 services:
   unms:
     image: nico640/docker-unms:latest
@@ -13,3 +25,19 @@ services:
       - TZ=Americas/Phoenix
     volumes:
       - 'unms_config:/config'
+  unifi:
+    image: yansch/unifi-rpi:latest
+    restart: always
+    ports:
+      - 8443:8443
+    # Uncomment the following to set java options
+    # environment:
+    #   JAVA_OPTS: -Xmx512M
+    volumes:
+      # Unifi v5.0.7 creates all of these directories (some remain empty)
+      - unifi_config:/var/lib/unifi
+      - log:/usr/lib/unifi/logs
+      - log2:/var/log/unifi
+      - run:/usr/lib/unifi/run
+      - run2:/run/unifi
+      - work:/usr/lib/unifi/work
