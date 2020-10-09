@@ -1,18 +1,14 @@
-version: '2'
+version: '2.3'
 volumes:
   unms_config:
-  unifi_config:
-    driver: local
+  db:
+  dbcfg:
+  data:
   log:
-    driver: local
-  log2:
-    driver: local
+  cert:
+  init:
+  dir:
   run:
-    driver: local
-  run2:
-    driver: local
-  work:
-    driver: local
 services:
   unms:
     image: nico640/docker-unms:latest
@@ -25,19 +21,54 @@ services:
       - TZ=Americas/Phoenix
     volumes:
       - 'unms_config:/config'
-  unifi:
-    image: yansch/unifi-rpi:latest
+  mongo:
+    image: mongo:3.6
+    container_name: unifi_mongo
+    networks:
+      - unifi
     restart: always
-    ports:
-      - 8443:8443
-    # Uncomment the following to set java options
-    # environment:
-    #   JAVA_OPTS: -Xmx512M
     volumes:
-      # Unifi v5.0.7 creates all of these directories (some remain empty)
-      - unifi_config:/var/lib/unifi
-      - log:/usr/lib/unifi/logs
-      - log2:/var/log/unifi
-      - run:/usr/lib/unifi/run
-      - run2:/run/unifi
-      - work:/usr/lib/unifi/work
+      - db:/data/db
+      - dbcfg:/data/configdb
+  controller:
+    image: 'jacobalberty/unifi:5.14.23'
+    container_name: unifi_controller
+    depends_on:
+      - mongo
+    init: true
+    networks:
+      - unifi
+    restart: always
+    volumes:
+      - dir:/unifi
+      - data:/unifi/data
+      - log:/unifi/log
+      - cert:/unifi/cert
+      - init:/unifi/init.d
+      - run:/var/run/unifi
+      # Mount local folder for backups and autobackups
+      - ./backup:/unifi/data/backup
+    environment:
+      DB_URI: mongodb://mongo/unifi
+      STATDB_URI: mongodb://mongo/unifi_stat
+      DB_NAME: unifi
+    ports:
+      - '3478:3478/udp' # STUN
+      - '6789:6789/tcp' # Speed test
+      - '8080:8080/tcp' # Device/ controller comm.
+      - '8443:8443/tcp' # Controller GUI/API as seen in a web browser
+      - '8880:8880/tcp' # HTTP portal redirection
+      - '8843:8843/tcp' # HTTPS portal redirection
+      - '10001:10001/udp' # AP discovery
+  logs:
+    image: bash
+    container_name: unifi_logs
+    depends_on:
+      - controller
+    command: bash -c 'tail -F /unifi/log/*.log'
+    restart: always
+    volumes:
+      - log:/unifi/log
+
+  networks:
+    unifi:
