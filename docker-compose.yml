@@ -1,4 +1,4 @@
-version: '2.3'
+version: '2'
 volumes:
   unms_config:
   db:
@@ -9,6 +9,8 @@ volumes:
   init:
   dir:
   run:
+networks:
+  unifi:
 services:
   unms:
     image: nico640/docker-unms:latest
@@ -30,12 +32,11 @@ services:
     volumes:
       - db:/data/db
       - dbcfg:/data/configdb
-  controller:
+  unifi_controller:
     image: 'jacobalberty/unifi:5.14.23'
     container_name: unifi_controller
     depends_on:
       - mongo
-    init: true
     networks:
       - unifi
     restart: always
@@ -46,8 +47,8 @@ services:
       - cert:/unifi/cert
       - init:/unifi/init.d
       - run:/var/run/unifi
-      # Mount local folder for backups and autobackups
-      - ./backup:/unifi/data/backup
+      # # Mount local folder for backups and autobackups
+      # - ./backup:/unifi/data/backup
     environment:
       DB_URI: mongodb://mongo/unifi
       STATDB_URI: mongodb://mongo/unifi_stat
@@ -64,11 +65,8 @@ services:
     image: bash
     container_name: unifi_logs
     depends_on:
-      - controller
+      - unifi_controller
     command: bash -c 'tail -F /unifi/log/*.log'
     restart: always
     volumes:
       - log:/unifi/log
-
-  networks:
-    unifi:
