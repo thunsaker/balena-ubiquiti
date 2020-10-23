@@ -33,7 +33,7 @@ services:
       - db:/data/db
       - dbcfg:/data/configdb
   unifi_controller:
-    image: 'jacobalberty/unifi:5.14.23'
+    image: 'jacobalberty/unifi:latest'
     container_name: unifi_controller
     depends_on:
       - mongo
