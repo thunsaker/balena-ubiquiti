@@ -12,7 +12,7 @@ networks:
   unifi:
 services:
   mongo:
-    image: mongo:4.4.10
+    image: mongo:3.6
     container_name: unifi_mongo
     networks:
       - unifi
