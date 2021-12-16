@@ -1,6 +1,5 @@
 version: '2'
 volumes:
-  unms_config:
   db:
   dbcfg:
   data:
@@ -12,19 +11,8 @@ volumes:
 networks:
   unifi:
 services:
-  unms:
-    image: nico640/docker-unms:latest
-    restart: always
-    ports:
-      - 80:80
-      - 443:443
-      - 2055:2055/udp
-    environment:
-      - TZ=Americas/Phoenix
-    volumes:
-      - 'unms_config:/config'
   mongo:
-    image: mongo:3.6
+    image: mongo:latest
     container_name: unifi_mongo
     networks:
       - unifi
