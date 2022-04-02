@@ -3,7 +3,7 @@ volumes:
   unifi-config:
 services:
   unifi-controller:
-    image: linuxserver/unifi-controller:6.4.54-ls123
+    image: linuxserver/unifi-controller:latest
     # There are multiple reasons why we use host networking:
     #
     # 1. To avoid having to keep a large number of ports in sync. https://help.ubnt.com/hc/en-us/articles/218506997
